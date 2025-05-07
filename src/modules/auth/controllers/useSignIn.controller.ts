@@ -1,24 +1,23 @@
-import { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { UserRepository } from "../../../../contexts/auth/domain/user.repository";
-import { signInQuery } from "../../../../contexts/auth/app/sign-in.query";
+import { signInQueryUseCase } from "../../../../contexts/auth/app/sign-in.query";
 import { EventEmitter } from "../../../../packages/context/app/emitter";
-import { userStore } from "../stores/user.store";
+import { useUserStore } from "../stores/user.store";
+import { DomainEvent } from "../../../../packages/context/domain/event";
 
 export function useSignInController(
   userRepository: UserRepository,
-  eventEmitter: EventEmitter<object>
+  eventEmitter: EventEmitter<DomainEvent<object>>
 ) {
-  const signInUseCase = useMemo(
-    () => signInQuery(userRepository, eventEmitter),
-    [userRepository, eventEmitter]
-  );
-
-  const signInUser = userStore((state) => state.signIn);
+  const signInUser = useUserStore((state) => state.signInUser);
 
   const { mutate, ...rest } = useMutation({
-    mutationFn: signInUseCase.exec,
-    onSuccess: (response) => response.success && signInUser(response.data),
+    mutationFn: signInQueryUseCase(userRepository, eventEmitter).exec,
+    onSuccess: (response) => {
+      if (response.success) return signInUser(response.data);
+
+      // manage failure response UI side
+    },
   });
 
   return { signInUser: mutate, ...rest };

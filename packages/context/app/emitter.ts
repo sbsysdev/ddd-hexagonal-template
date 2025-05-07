@@ -1,24 +1,22 @@
 import { DomainEvent } from "../domain/event";
 
-type EventEmitterSubscribe<T extends object> = (event: DomainEvent<T>) => void;
+type EventEmitterSubscribe<T> = (event: T) => void;
 
 type EventEmitterUnsubscribe = () => void;
 
-type DomainEventInstance<T extends object> = new (
-  ...args: any
-) => DomainEvent<T>;
+type DomainEventInstance<T> = new (...args: any) => T;
 
-export interface EventEmitter<T extends object> {
-  publish(event: DomainEvent<T>): void;
-  subscribe(
-    domainEventRef: DomainEventInstance<T>,
-    subscriber: EventEmitterSubscribe<T>
+export interface EventEmitter<T extends DomainEvent<any> = DomainEvent<any>> {
+  publish(event: T): void;
+  subscribe<U extends T>(
+    domainEventRef: DomainEventInstance<U>,
+    subscriber: EventEmitterSubscribe<U>
   ): EventEmitterUnsubscribe;
 }
 
-class BaseEventEmitter<T extends object> implements EventEmitter<T> {
+class BaseEventEmitter<T extends DomainEvent<any>> implements EventEmitter<T> {
   private readonly _eventSource: Map<
-    DomainEventInstance<T>,
+    DomainEventInstance<any>,
     EventEmitterSubscribe<T>[]
   >;
 
@@ -26,13 +24,13 @@ class BaseEventEmitter<T extends object> implements EventEmitter<T> {
     this._eventSource = new Map();
   }
 
-  publish(event: DomainEvent<T>): void {
+  publish(event: T): void {
     this._eventSource
-      .get(event["constructor"] as DomainEventInstance<T>)
+      .get(event["constructor"] as DomainEventInstance<any>)
       ?.forEach((cb) => cb(event));
   }
 
-  subscribe<U extends T = T>(
+  subscribe<U extends T>(
     domainEventRef: DomainEventInstance<U>,
     subscriber: EventEmitterSubscribe<U>
   ): EventEmitterUnsubscribe {
@@ -53,6 +51,6 @@ class BaseEventEmitter<T extends object> implements EventEmitter<T> {
   }
 }
 
-export function eventEmitter(): EventEmitter<object> {
-  return new BaseEventEmitter<object>();
+export function eventEmitter<E extends DomainEvent<any>>(): EventEmitter<E> {
+  return new BaseEventEmitter<E>();
 }

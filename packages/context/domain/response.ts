@@ -2,13 +2,14 @@ import { DomainException } from "./exception";
 
 export interface SuccessResponse<S extends object> {
   success: true;
-  error: false;
+  failure: false;
   data: S;
 }
 
 export interface ExceptionResponse<E extends string> {
   success: false;
-  error: DomainException<E>;
+  failure: true;
+  exception: DomainException<E>;
   message: string | undefined;
 }
 
@@ -27,7 +28,7 @@ class BaseSuccessResponse<S extends object> implements SuccessResponse<S> {
     return true;
   }
 
-  get error(): false {
+  get failure(): false {
     return false;
   }
 
@@ -41,11 +42,11 @@ export function successResponse<S extends object>(data: S): SuccessResponse<S> {
 }
 
 class BaseExceptionResponse<E extends string> implements ExceptionResponse<E> {
-  private readonly _error: DomainException<E>;
+  private readonly _exception: DomainException<E>;
   private readonly _message?: string;
 
-  constructor(error: DomainException<E>, message?: string) {
-    this._error = error;
+  constructor(exception: DomainException<E>, message?: string) {
+    this._exception = exception;
     this._message = message;
   }
 
@@ -53,8 +54,12 @@ class BaseExceptionResponse<E extends string> implements ExceptionResponse<E> {
     return false;
   }
 
-  get error(): DomainException<E> {
-    return this._error;
+  get failure(): true {
+    return true;
+  }
+
+  get exception(): DomainException<E> {
+    return this._exception;
   }
 
   get message(): string | undefined {

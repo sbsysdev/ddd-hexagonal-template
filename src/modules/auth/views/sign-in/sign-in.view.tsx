@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { useSignInView } from "./sign-in.hook";
+import { useSignInView } from "./useSignInView.hook";
 import { signInStyles } from "./sign-in.styles";
 
 export function SignInView() {

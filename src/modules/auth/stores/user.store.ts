@@ -9,8 +9,8 @@ interface UserStoreState extends SignedInUserDTO {
 }
 
 interface UserStoreActions {
-  signIn(user: SignInUserDTO): void;
-  signOut(): void;
+  signInUser(user: SignInUserDTO): void;
+  signOutUser(): void;
 }
 
 const initialState: UserStoreState = {
@@ -23,8 +23,10 @@ const initialState: UserStoreState = {
   isSignedIn: false,
 };
 
-export const userStore = create<UserStoreState & UserStoreActions>()((set) => ({
-  ...initialState,
-  signIn: (user) => set({ ...user, isSignedIn: true }),
-  signOut: () => set(initialState),
-}));
+export const useUserStore = create<UserStoreState & UserStoreActions>()(
+  (set) => ({
+    ...initialState,
+    signInUser: (user) => set({ ...user, isSignedIn: true }),
+    signOutUser: () => set(initialState),
+  })
+);

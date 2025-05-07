@@ -1,12 +1,10 @@
-export interface DomainEvent<T extends object> {
+export interface DomainEvent<T> {
   id: string;
   metadata: T;
   occurredAt: Date;
 }
 
-export abstract class BaseDomainEvent<T extends object>
-  implements DomainEvent<T>
-{
+export abstract class BaseDomainEvent<T> implements DomainEvent<T> {
   private readonly _id: string;
   private readonly _metadata: T;
   private readonly _occurredAt: Date;

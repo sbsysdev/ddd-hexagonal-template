@@ -48,11 +48,11 @@ export class UserEntity extends BaseEntity<UserRawDTO> {
   static fromRawData(rawData: UserRawDTO): Response<UserEntity, UserError> {
     const username = userNameValue(rawData.name);
 
-    if (username.error) return username;
+    if (username.failure) return username;
 
     const userpassword = userPasswordValue(rawData.password);
 
-    if (userpassword.error) return userpassword;
+    if (userpassword.failure) return userpassword;
 
     return successResponse(
       new UserEntity(rawData.id, username.data, userpassword.data, rawData)

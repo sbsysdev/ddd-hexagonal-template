@@ -8,16 +8,13 @@ import { userNameValue } from "../domain/username.value";
 import { userPasswordValue } from "../domain/userpassword.value";
 import { signedInUserEvent } from "../domain/signed-in-user.event";
 
-export class SignInQuery
+export class SignInQueryUseCase
   implements UseCase<SignInUserDTO, SignedInUserDTO, UserError>
 {
   private readonly _userRepository: UserRepository;
-  private readonly _eventEmitter: EventEmitter<object>;
+  private readonly _eventEmitter: EventEmitter;
 
-  constructor(
-    userRepository: UserRepository,
-    eventEmitter: EventEmitter<object>
-  ) {
+  constructor(userRepository: UserRepository, eventEmitter: EventEmitter) {
     this._userRepository = userRepository;
     this._eventEmitter = eventEmitter;
   }
@@ -26,16 +23,16 @@ export class SignInQuery
     params: SignInUserDTO
   ): Promise<Response<SignedInUserDTO, UserError>> {
     const username = userNameValue(params.name);
-    if (username.error) return username;
+    if (username.failure) return username;
 
     const userpassword = userPasswordValue(params.password);
-    if (userpassword.error) return userpassword;
+    if (userpassword.failure) return userpassword;
 
     const signedInUser = await this._userRepository.signInUser(params);
-    if (signedInUser.error) return signedInUser;
+    if (signedInUser.failure) return signedInUser;
 
     const userEntity = UserEntity.fromRawData(signedInUser.data);
-    if (userEntity.error) return userEntity;
+    if (userEntity.failure) return userEntity;
 
     this._eventEmitter.publish(signedInUserEvent(userEntity.data));
 
@@ -43,9 +40,9 @@ export class SignInQuery
   }
 }
 
-export function signInQuery(
+export function signInQueryUseCase(
   userRepository: UserRepository,
-  eventEmitter: EventEmitter<object>
+  eventEmitter: EventEmitter
 ) {
-  return new SignInQuery(userRepository, eventEmitter);
+  return new SignInQueryUseCase(userRepository, eventEmitter);
 }
